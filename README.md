@@ -16,6 +16,11 @@ Install [mongo-driver](https://godoc.org/go.mongodb.org/mongo-driver) go package
 $ go get go.mongodb.org/mongo-driver
 ```
 
+Install [storj-uplink](https://godoc.org/storj.io/storj/lib/uplink) go package, by running:
+```
+$ go get storj.io/storj/lib/uplink
+```
+
 
 ## Build ONCE
 ```
@@ -37,7 +42,8 @@ $ go build storj_mongodb.go
     "apikey":     "change-me-to-the-api-key-created-in-satellite-gui",
     "satellite":  "mars.tardigrade.io:7777",
     "bucket":     "my-first-bucket",
-	"uploadPath": "foo/bar/baz"
+	"uploadPath": "foo/bar/baz",
+    "encryptionpassphrase": "test"
 }
 ```
 
@@ -55,17 +61,17 @@ $ ./storj_mongodb.go -h
 $ ./storj_mongodb.go -v
 ```
 
-* Read MongoDB instance property from a desired file
+* Read BSON data from desired MongoDB instance to given Storj network bucket
 ```
-$ ./storj_mongodb.go c ./config/db_property
+$ ./storj_mongodb.go c ./config/db_property ./config/storj_config.json
 ```
 
-* Read MongoDB instance property from a desired file
+* Unit Test: MongoDB instance's property read from a desired file, establish connection and read all collections
 ```
 $ ./storj_mongodb.go d ./config/db_property
 ```
 
-* Read and parse Storj network's configuration, in JSON format, from a desired file
+* Unit Test: Storj network's configuration read and parsed, in JSON format, from a desired file, establish connection and send a sample data to a bucket
 ```
 $ ./storj_mongodb.go s ./config/storj_config.json
 ```
