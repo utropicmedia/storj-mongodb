@@ -29,12 +29,14 @@ $ go build storj_mongodb.go
 
 
 ## Set-up Files
-* Create a `db_property` file, with following contents about a MongoDB instance:
-    Host Name
-    Port Number
-    User Name
-    Password
-    Database Name
+* Create a `db_property.json` file, with following contents about a MongoDB instance:
+{ 
+    "hostname": "hostName",
+    "port":     "27017",
+    "username": "userName",
+    "password": "password",
+    "database": "databaseName"
+}
 
 * Create a `storj_config.json` file, with Storj network's configuration information in JSON format:
 ```
@@ -51,6 +53,9 @@ $ go build storj_mongodb.go
 
 
 ## Run the command-line tool
+
+**NOTE**: The following commands operate in a Linux system
+
 * Get help
 ```
 $ ./storj_mongodb.go -h
@@ -61,17 +66,17 @@ $ ./storj_mongodb.go -h
 $ ./storj_mongodb.go -v
 ```
 
-* Read BSON data from desired MongoDB instance to given Storj network bucket
+* Read BSON data from desired MongoDB instance and upload it to given Storj network bucket
 ```
-$ ./storj_mongodb.go c ./config/db_property ./config/storj_config.json
-```
-
-* Unit Test: MongoDB instance's property read from a desired file, establish connection and read all collections
-```
-$ ./storj_mongodb.go d ./config/db_property
+$ ./storj_mongodb.go c ./config/db_property.json ./config/storj_config.json
 ```
 
-* Unit Test: Storj network's configuration read and parsed, in JSON format, from a desired file, establish connection and send a sample data to a bucket
+* Read MongoDB instance property from a desired JSON file and display all its collections' data
+```
+$ ./storj_mongodb.go d ./config/db_property.json
+```
+
+* Read and parse Storj network's configuration, in JSON format, from a desired file and upload a sample object
 ```
 $ ./storj_mongodb.go s ./config/storj_config.json
 ```
