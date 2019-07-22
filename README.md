@@ -36,6 +36,7 @@ $ go build storj_mongodb.go
 
 ## Set-up Files
 * Create a `db_property.json` file, with following contents about a MongoDB instance:
+```
 { 
     "hostname": "hostName",
     "port":     "27017",
@@ -43,6 +44,7 @@ $ go build storj_mongodb.go
     "password": "password",
     "database": "databaseName"
 }
+```
 
 * Create a `storj_config.json` file, with Storj network's configuration information in JSON format:
 ```
