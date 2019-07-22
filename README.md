@@ -22,6 +22,12 @@ $ go get storj.io/storj/lib/uplink
 ```
 
 
+## Packages
+* Create a 'mongo' folder in ```$HOME/go/src/``` directory. Save the 'mongo.go' package within ```$HOME/go/src/mongo/``` folder.
+
+* Create a 'storj' folder in ```$HOME/go/src/``` directory. Save the 'storj.go' package within ```$HOME/go/src/storj/``` folder.
+
+
 ## Build ONCE
 ```
 $ go build storj_mongodb.go
