@@ -22,11 +22,12 @@ $ go get storj.io/storj/lib/uplink
 ```
 
 
-## Packages
-* Create a 'mongo' folder in ```$HOME/go/src/``` directory. Save the 'mongo.go' package within ```$HOME/go/src/mongo/``` folder.
 
-* Create a 'storj' folder in ```$HOME/go/src/``` directory. Save the 'storj.go' package within ```$HOME/go/src/storj/``` folder.
-
+## Configure Packages
+```
+$ chmod 555 configure.sh
+$ ./configure.sh
+```
 
 ## Build ONCE
 ```
@@ -36,26 +37,26 @@ $ go build storj_mongodb.go
 
 ## Set-up Files
 * Create a `db_property.json` file, with following contents about a MongoDB instance:
-```
-{ 
-    "hostname": "hostName",
-    "port":     "27017",
-    "username": "userName",
-    "password": "password",
-    "database": "databaseName"
-}
-```
+    ```
+    { 
+        "hostname": "hostName",
+        "port":     "27017",
+        "username": "userName",
+        "password": "password",
+        "database": "databaseName"
+    }
+    ```
 
 * Create a `storj_config.json` file, with Storj network's configuration information in JSON format:
-```
-{ 
-    "apikey":     "change-me-to-the-api-key-created-in-satellite-gui",
-    "satellite":  "mars.tardigrade.io:7777",
-    "bucket":     "my-first-bucket",
-	"uploadPath": "foo/bar/baz",
-    "encryptionpassphrase": "test"
-}
-```
+    ```
+    { 
+        "apikey":     "change-me-to-the-api-key-created-in-satellite-gui",
+        "satellite":  "mars.tardigrade.io:7777",
+        "bucket":     "my-first-bucket",
+        "uploadPath": "foo/bar/baz",
+        "encryptionpassphrase": "test"
+    }
+    ```
 
 * Store both these files in a `config` folder
 
@@ -65,26 +66,26 @@ $ go build storj_mongodb.go
 **NOTE**: The following commands operate in a Linux system
 
 * Get help
-```
-$ ./storj_mongodb.go -h
-```
+    ```
+    $ ./storj_mongodb.go -h
+    ```
 
 * Check version
-```
-$ ./storj_mongodb.go -v
-```
+    ```
+    $ ./storj_mongodb.go -v
+    ```
 
 * Read BSON data from desired MongoDB instance and upload it to given Storj network bucket
-```
-$ ./storj_mongodb.go c ./config/db_property.json ./config/storj_config.json
-```
+    ```
+    $ ./storj_mongodb.go c ./config/db_property.json ./config/storj_config.json
+    ```
 
 * Read MongoDB instance property from a desired JSON file and display all its collections' data
-```
-$ ./storj_mongodb.go d ./config/db_property.json
-```
+    ```
+    $ ./storj_mongodb.go d ./config/db_property.json
+    ```
 
 * Read and parse Storj network's configuration, in JSON format, from a desired file and upload a sample object
-```
-$ ./storj_mongodb.go s ./config/storj_config.json
-```
+    ```
+    $ ./storj_mongodb.go s ./config/storj_config.json
+    ```
