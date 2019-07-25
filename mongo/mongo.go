@@ -10,14 +10,14 @@
 package mongo
 
 import(
-	"os"
-	"log"
-	"fmt"
-	"time"
 	"context"
-	"io/ioutil"
 	"encoding/json"
-	"github.com/urfave/cli"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"time"
+	
 	"go.mongodb.org/mongo-driver/mongo"
     "go.mongodb.org/mongo-driver/bson"
     "go.mongodb.org/mongo-driver/mongo/options"
@@ -68,14 +68,8 @@ func LoadMongoProperty(fullFileName string) (ConfigMongoDB, error) {
 // based on the read property from an external file
 // it then reads ALL collections' BSON data, and 
 // returns them in appended format 
-func ConnectToDB_FetchData(cliContext *cli.Context) ([]byte, string,error) {
+func ConnectToDB_FetchData(fullFileName string) ([]byte, string, error) {
 	// Read MongoDB instance's properties from an external file
-	fullFileName := "./config/db_property.json"
-	//
-	if len(cliContext.Args()) > 0 {
-		fullFileName = cliContext.Args()[0]
-	}
-	//
 	configMongoDB, err := LoadMongoProperty(fullFileName)
 	if err != nil {
 		log.Fatalf("loadMongoProperty: %s", err)
@@ -122,7 +116,7 @@ func ConnectToDB_FetchData(cliContext *cli.Context) ([]byte, string,error) {
 	collectionNames, err:= db.ListCollectionNames(ctx, filterBSON)
 	if err != nil {
 	    log.Printf("Failed to retrieve collection names: %s", err)
-	    return allCollectionsDataBSON, "",err
+	    return allCollectionsDataBSON, "", err
 	}
 
 	// Go through ALL collections
@@ -147,45 +141,21 @@ func ConnectToDB_FetchData(cliContext *cli.Context) ([]byte, string,error) {
 			rawDocumentJSON := cursor.Current
 			// Convert JSON to BSON
 			rawDocumentBSON, _ := bson.Marshal(rawDocumentJSON)
-			//
-			if DEBUG {
-				// writing the BSON data to an external file, to verify later
-				err = ioutil.WriteFile("data.bson", rawDocumentBSON, 0644)
-				// displaying the BSON data
-				fmt.Printf("%+v", rawDocumentBSON)
-			}
-			//
 			// Append the BSON data to earlier one
 			allCollectionsDataBSON = append(allCollectionsDataBSON[:], rawDocumentBSON...)
-			
-			if gb_DEBUG_DEV {
-				// displaying the JSON equivalent of the BSON data
-				var bson2JSON interface{}
-				err = bson.Unmarshal(rawDocumentBSON, &bson2JSON)
-				//
-				
-				fmt.Println("JSON data read: ",rawDocumentBSON)
-				fmt.Println("JSON data read: ",bson2JSON)
-				
-			}
 	    }		
 	}
 	//
 	if DEBUG {
 		// complete BSON data from ALL collections
-		fmt.Println("FULL BSON data read: ", allCollectionsDataBSON)
+		t := time.Now()
+    	time := t.Format("2006-01-02_15:04:05")
+    	var filename string = "uploaddata_"+time+".bson"
+		err = ioutil.WriteFile(filename, allCollectionsDataBSON, 0644)
 		//
 		// converting it into its equivalent JSON
-		var bson2JSON interface{}
-		err = bson.Unmarshal(allCollectionsDataBSON, &bson2JSON)
-		//
-		if err != nil {
-			log.Printf("From Mongo functions bson. Unmarshal: %s",  err)
-		} else {
-			fmt.Println("FULL JSON data read: ",bson2JSON)
-		}
 	}
 
-	return allCollectionsDataBSON, configMongoDB.Database,nil
+	return allCollectionsDataBSON, configMongoDB.Database, nil
 }
 
