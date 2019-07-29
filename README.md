@@ -80,12 +80,26 @@ $ go build storj_mongodb.go
     $ ./storj_mongodb.go c ./config/db_property.json ./config/storj_config.json
     ```
 
+* Read BSON data in `debug` mode from desired MongoDB instance and upload it to given Storj network bucket
+    ```
+    $ ./storj_mongodb.go c debug ./config/db_property.json ./config/storj_config.json
+    ```
+
 * Read MongoDB instance property from a desired JSON file and display all its collections' data
     ```
     $ ./storj_mongodb.go d ./config/db_property.json
     ```
 
+* Read MongoDB instance property in `debug` mode from a desired JSON file and display all its collections' data
+    ```
+    $ ./storj_mongodb.go d debug ./config/db_property.json
+    ```
+
 * Read and parse Storj network's configuration, in JSON format, from a desired file and upload a sample object
     ```
     $ ./storj_mongodb.go s ./config/storj_config.json
+    ```
+* Read and parse Storj network's configuration, in JSON format, from a desired file and upload a sample object in `debug` mode
+    ```
+    $ ./storj_mongodb.go s debug ./config/storj_config.json
     ```
