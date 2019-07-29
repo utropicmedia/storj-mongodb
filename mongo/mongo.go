@@ -3,6 +3,9 @@
  * based on the properties, read from a JSON file.
  * It then reads BSON data from all the collections.
  *
+ * v 1.0.1
+ * changed authSource from "admin" to the database name, fetched from the json file 
+ *
  * v 1.0.0
  * MongoDB functions collected into a separate package 
  */
@@ -78,7 +81,7 @@ func ConnectToDB_FetchData(fullFileName string) ([]byte, string, error) {
 
 	fmt.Println("\nConnecting to MongoDB...")
 
-	mongoURL := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource=admin", configMongoDB.Username, configMongoDB.Password, configMongoDB.Hostname, configMongoDB.Portnumber, configMongoDB.Database)
+	mongoURL := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s?authSource="+configMongoDB.Database, configMongoDB.Username, configMongoDB.Password, configMongoDB.Hostname, configMongoDB.Portnumber, configMongoDB.Database)
 	// 
 	clientOptions := options.Client().ApplyURI(mongoURL)
 	//
