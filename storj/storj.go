@@ -1,11 +1,5 @@
-/*
- * storj package connects to a Storj network,
- * based on the configuration, read from a JSON file.
- * It then stores given BSON data at desired bucket.
- *
- * v 1.0.0
- * Storj functions collected into a separate package
- */
+// Copyright (C) 2019 Storj Labs, Inc.
+// See LICENSE for copying information.
 
 package storj
 
@@ -21,11 +15,10 @@ import (
 	"storj.io/storj/lib/uplink"
 )
 
-// DEBUG allows more detailed working to be exposed through the terminal
+// DEBUG allows more detailed working to be exposed through the terminal.
 var DEBUG = true
 
-// ConfigStorj depicts keys to search for
-// within the stroj_config.json file
+// ConfigStorj depicts keys to search for within the stroj_config.json file.
 type ConfigStorj struct {
 	APIKey               string `json:"apikey"`
 	Satellite            string `json:"satellite"`
@@ -34,9 +27,9 @@ type ConfigStorj struct {
 	EncryptionPassphrase string `json:"encryptionpassphrase"`
 }
 
-// LoadStorjConfiguration reads and parses the JSON file
-// that contain Storj configuration information
-func LoadStorjConfiguration(fullFileName string) (ConfigStorj, error) {
+// LoadStorjConfiguration reads and parses the JSON file that contain Storj configuration information.
+func LoadStorjConfiguration(fullFileName string) (ConfigStorj, error) { // fullFileName for fetching storj V3 credentials from  given JSON filename.
+
 	var configStorj ConfigStorj
 
 	fileHandle, err := os.Open(fullFileName)
@@ -48,7 +41,7 @@ func LoadStorjConfiguration(fullFileName string) (ConfigStorj, error) {
 	jsonParser := json.NewDecoder(fileHandle)
 	jsonParser.Decode(&configStorj)
 
-	// Display read information
+	// Display read information.
 	fmt.Println("Read Storj configuration from the ", fullFileName, " file")
 	fmt.Println("\nAPI Key\t\t: ", configStorj.APIKey)
 	fmt.Println("Satellite	: ", configStorj.Satellite)
@@ -60,10 +53,11 @@ func LoadStorjConfiguration(fullFileName string) (ConfigStorj, error) {
 
 // ConnectStorjUploadData reads Storj configuration from given file,
 // connects to the desired Storj network, and
-// uploads given object to the desired bucket
-func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseName string) error {
-
-	// Read Storj bucket's configuration from an external file
+// uploads given object to the desired bucket.
+func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseName string) error { // fullFileName for fetching storj V3 credentials from  given JSON filename
+	// dataToUpload contains data that will be uploaded to storj V3 network.
+	// databaseName for adding dataBase name in storj V3 filename.
+	// Read Storj bucket's configuration from an external file.
 	configStorj, err := LoadStorjConfiguration(fullFileName)
 	if err != nil {
 		return fmt.Errorf("loadStorjConfiguration: %s", err)
@@ -74,11 +68,11 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	var cfg uplink.Config
 	ctx := context.Background()
 
-	upl, err := uplink.NewUplink(ctx, &cfg)
+	uplinkstorj, err := uplink.NewUplink(ctx, &cfg)
 	if err != nil {
 		return fmt.Errorf("Could not create new Uplink object: %s", err)
 	}
-	defer upl.Close()
+	defer uplinkstorj.Close()
 
 	fmt.Println("\nParsing the API key...")
 
@@ -94,14 +88,14 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 
 	fmt.Println("\nOpening Project...")
 
-	proj, err := upl.OpenProject(ctx, configStorj.Satellite, key)
+	proj, err := uplinkstorj.OpenProject(ctx, configStorj.Satellite, key)
 	//
 	if err != nil {
 		return fmt.Errorf("Could not open project: %s", err)
 	}
 	defer proj.Close()
 
-	// Creating an encryption key from encryption passphrase
+	// Creating an encryption key from encryption passphrase.
 	fmt.Println("\nGet encryption key from pass phrase...")
 
 	encryptionKey, err := proj.SaltedKeyFromPassphrase(ctx, configStorj.EncryptionPassphrase)
@@ -109,11 +103,11 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 		return fmt.Errorf("Could not create encryption key: %s", err)
 	}
 
-	// Creating an encryption context
+	// Creating an encryption context.
 	access := uplink.NewEncryptionAccessWithDefaultKey(*encryptionKey)
 	fmt.Println("\nEncryption access \t:", *access)
 
-	// Serializing the parsed access, so as to compare with the original key
+	// Serializing the parsed access, so as to compare with the original key.
 	serializedAccess, err := access.Serialize()
 	if err != nil {
 		fmt.Println("Error Serialized key : ", err)
@@ -123,7 +117,7 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 
 	fmt.Println("\nOpening Bucket...", configStorj.Bucket)
 
-	// Open up the desired Bucket within the Project
+	// Open up the desired Bucket within the Project.
 	bucket, err := proj.OpenBucket(ctx, configStorj.Bucket, access)
 	//
 	if err != nil {
@@ -143,7 +137,9 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	fmt.Println("File path: ", configStorj.UploadPath)
 
 	fmt.Println("\nUploading of the object to the Storj bucket: Initiated...")
-	// Uploading BSON to Storj
+	//
+
+	// Uploading BSON to Storj.
 	err = bucket.UploadObject(ctx, configStorj.UploadPath, buf, nil)
 	if err != nil {
 		fmt.Println("Uploading of data failed :\n ", err)
@@ -157,9 +153,9 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	fmt.Println("\nUploading of the object to the Storj bucket: Completed!")
 
 	if DEBUG {
-		// test uploaded data by downloading it
-		// serializedAccess, err := access.Serialize()
-		// Initiate a download of the same object again
+		// Test uploaded data by downloading it.
+		// serializedAccess, err := access.Serialize().
+		// Initiate a download of the same object again.
 		readBack, err := bucket.OpenObject(ctx, configStorj.UploadPath)
 		if err != nil {
 			return fmt.Errorf("could not open object at %q: %v", configStorj.UploadPath, err)
@@ -167,14 +163,14 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 		defer readBack.Close()
 
 		fmt.Println("Downloading range")
-		// We want the whole thing, so range from 0 to -1
+		// We want the whole thing, so range from 0 to -1.
 		strm, err := readBack.DownloadRange(ctx, 0, -1)
 		if err != nil {
 			return fmt.Errorf("could not initiate download: %v", err)
 		}
 		defer strm.Close()
 		fmt.Println("Downloading Object from bucket : Initiated....")
-		// Read everything from the stream
+		// Read everything from the stream.
 		receivedContents, err := ioutil.ReadAll(strm)
 		if err != nil {
 			return fmt.Errorf("could not read object: %v", err)

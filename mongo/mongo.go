@@ -1,14 +1,5 @@
-/*
- * mongo package connects to a Mongo database instance,
- * based on the properties, read from a JSON file.
- * It then reads BSON data from all the collections.
- *
- * v 1.0.1
- * changed authSource from "admin" to the database name, fetched from the json file
- *
- * v 1.0.0
- * MongoDB functions collected into a separate package
- */
+// Copyright (C) 2019 Storj Labs, Inc.
+// See LICENSE for copying information.
 
 package mongo
 
@@ -26,10 +17,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-// DEBUG allows more detailed working to be exposed through the terminal
+// DEBUG allows more detailed working to be exposed through the terminal.
 var DEBUG = false
 
-// ConfigMongoDB define variables and types
+// ConfigMongoDB defines the variables and types.
 type ConfigMongoDB struct {
 	Hostname   string `json:"hostname"`
 	Portnumber string `json:"port"`
@@ -38,10 +29,10 @@ type ConfigMongoDB struct {
 	Database   string `json:"database"`
 }
 
-// LoadMongoProperty reads and parses the JSON file
-// that contain a MongoDB instance's property
-// and returns all the properties as an object
-func LoadMongoProperty(fullFileName string) (ConfigMongoDB, error) {
+// LoadMongoProperty reads and parses the JSON file.
+// that contain a MongoDB instance's property.
+// and returns all the properties as an object.
+func LoadMongoProperty(fullFileName string) (ConfigMongoDB, error) { // fullFileName for fetching database credentials from  given JSON filename.
 	var configMongoDB ConfigMongoDB
 	// Open and read the file
 	fileHandle, err := os.Open(fullFileName)
@@ -53,7 +44,7 @@ func LoadMongoProperty(fullFileName string) (ConfigMongoDB, error) {
 	jsonParser := json.NewDecoder(fileHandle)
 	jsonParser.Decode(&configMongoDB)
 
-	// Display read information
+	// Display read information.
 	fmt.Println("Read MongoDB configuration from the ", fullFileName, " file")
 	fmt.Println("Hostname\t", configMongoDB.Hostname)
 	fmt.Println("Portnumber\t", configMongoDB.Portnumber)
@@ -67,9 +58,9 @@ func LoadMongoProperty(fullFileName string) (ConfigMongoDB, error) {
 // ConnectToDBFetchData will connect to a MongoDB instance,
 // based on the read property from an external file
 // it then reads ALL collections' BSON data, and
-// returns them in appended format
-func ConnectToDBFetchData(fullFileName string) ([]byte, string, error) {
-	// Read MongoDB instance's properties from an external file
+// returns them in appended format.
+func ConnectToDBFetchData(fullFileName string) ([]byte, string, error) { // fullFileName for fetching database credentials from  given JSON filename.
+	// Read MongoDB instance's properties from an external file.
 	configMongoDB, err := LoadMongoProperty(fullFileName)
 	if err != nil {
 		log.Fatalf("loadMongoProperty: %s", err)
@@ -87,26 +78,26 @@ func ConnectToDBFetchData(fullFileName string) ([]byte, string, error) {
 		log.Fatalf("mongo.Connect: %s", err)
 	}
 
-	// Check the connection with MongoDB
+	// Check the connection with MongoDB.
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
 		fmt.Println("FAILed to connect to the MongoDB instance!")
 		log.Fatalf("client.Ping: %s", err)
 	}
 
-	// Inform about successful connection
+	// Inform about successful connection.
 	fmt.Println("Successfully connected to MongoDB!")
 
 	fmt.Println("\nReading ALL collections from the MongoDB database...")
 
-	// Read database name from the db_property file
+	// Read database name from the db_property file.
 	db := client.Database(configMongoDB.Database)
 
-	// Create a new context with a 10 second timeout
+	// Create a new context with a 10 second timeout.
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Retrieve ALL collections in the database
+	// Retrieve ALL collections in the database.
 	var allCollectionsDataBSON = []byte{}
 
 	filterBSON := bson.M{}
@@ -117,7 +108,7 @@ func ConnectToDBFetchData(fullFileName string) ([]byte, string, error) {
 		return allCollectionsDataBSON, "", err
 	}
 
-	// Go through ALL collections
+	// Go through ALL collections.
 	for _, collectionName := range collectionNames {
 		if DEBUG {
 			fmt.Println("\nCollection: ", collectionName)
@@ -132,26 +123,25 @@ func ConnectToDBFetchData(fullFileName string) ([]byte, string, error) {
 			log.Fatal(err)
 		}
 
-		// Retrieve ALL documents from the selected collection
+		// Retrieve ALL documents from the selected collection.
 		for cursor.Next(ctx) {
 
-			// JSON document
+			// JSON document.
 			rawDocumentJSON := cursor.Current
-			// Convert JSON to BSON
+			// Convert JSON to BSON.
 			rawDocumentBSON, _ := bson.Marshal(rawDocumentJSON)
-			// Append the BSON data to earlier one
+			// Append the BSON data to earlier one.
 			allCollectionsDataBSON = append(allCollectionsDataBSON[:], rawDocumentBSON...)
 		}
 	}
 	//
 	if DEBUG {
-		// complete BSON data from ALL collections
+		// complete BSON data from ALL collections.
 		t := time.Now()
 		time := t.Format("2006-01-02_15:04:05")
 		var filename = "uploaddata_" + time + ".bson"
 		err = ioutil.WriteFile(filename, allCollectionsDataBSON, 0644)
 		//
-		// converting it into its equivalent JSON
 	}
 
 	return allCollectionsDataBSON, configMongoDB.Database, nil
