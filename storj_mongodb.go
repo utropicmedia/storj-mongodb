@@ -31,7 +31,7 @@ func setAppInfo() {
 	app.Name = "Storj MongoDB Connector"
 	app.Usage = "Backup your MongoDB collections to the decentralized Storj network"
 	app.Author = "Satyam Shivam - Utropicmedia"
-	app.Version = "1.0.6"
+	app.Version = "1.0.7"
 
 }
 
@@ -49,7 +49,7 @@ func setCommands() {
 		{
 			Name:    "parse",
 			Aliases: []string{"p"},
-			Usage:   "Command to read and parse JSON information about MongoDB instance properties and then fetch ALL its collections. fileName [optional] = provide full file name (with complete path), storing mongoDB properties if this fileName is not given, then data is read from ./config/db_connector.json ",
+			Usage:   "Command to read and parse JSON information about MongoDB instance properties and then fetch ALL its collections. ",
 			//\narguments-\n\t  fileName [optional] = provide full file name (with complete path), storing mongoDB properties if this fileName is not given, then data is read from ./config/db_connector.json\n\t  example = ./storj_mongodb d ./config/db_property.json\n",
 			Action: func(cliContext *cli.Context) {
 				var fullFileName = dbConfigFile
