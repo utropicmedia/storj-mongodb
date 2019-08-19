@@ -88,7 +88,7 @@ func ConnectToDBFetchData(fullFileName string) ([]byte, string, error) { // full
 	// Inform about successful connection.
 	fmt.Println("Successfully connected to MongoDB!")
 
-	fmt.Println("\nReading ALL collections from the MongoDB database...")
+	fmt.Println("Reading ALL collections from the MongoDB database...")
 
 	// Read database name from the db_property file.
 	db := client.Database(configMongoDB.Database)

@@ -1,7 +1,7 @@
 { 
-    "hostname": "hostName",
+    "hostname": "localhost",
     "port":     "27017",
-    "username": "userName",
-    "password": "password",
-    "database": "databaseName"
+    "username": "test",
+    "password": "test",
+    "database": "storj-test"
 }

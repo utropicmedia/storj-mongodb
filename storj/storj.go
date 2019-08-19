@@ -16,7 +16,7 @@ import (
 )
 
 // DEBUG allows more detailed working to be exposed through the terminal.
-var DEBUG = true
+var DEBUG = false
 
 // ConfigStorj depicts keys to search for within the stroj_config.json file.
 type ConfigStorj struct {
@@ -74,29 +74,29 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	}
 	defer uplinkstorj.Close()
 
-	fmt.Println("\nParsing the API key...")
-
+	fmt.Println("Parsing the API key...")
 	key, err := uplink.ParseAPIKey(configStorj.APIKey)
 	if err != nil {
 		return fmt.Errorf("Could not parse API key: %s", err)
 	}
-	//
+
 	if DEBUG {
 		fmt.Println("API key \t   :", key)
 		fmt.Println("Serialized API key :", key.Serialize())
 	}
 
-	fmt.Println("\nOpening Project...")
-
+	fmt.Println("Opening Project...")
 	proj, err := uplinkstorj.OpenProject(ctx, configStorj.Satellite, key)
-	//
+
 	if err != nil {
 		return fmt.Errorf("Could not open project: %s", err)
 	}
 	defer proj.Close()
 
 	// Creating an encryption key from encryption passphrase.
-	fmt.Println("\nGet encryption key from pass phrase...")
+	if DEBUG {
+		fmt.Println("\nGetting encryption key from pass phrase...")
+	}
 
 	encryptionKey, err := proj.SaltedKeyFromPassphrase(ctx, configStorj.EncryptionPassphrase)
 	if err != nil {
@@ -105,17 +105,18 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 
 	// Creating an encryption context.
 	access := uplink.NewEncryptionAccessWithDefaultKey(*encryptionKey)
-	fmt.Println("\nEncryption access \t:", *access)
+	fmt.Println("Encryption access \t:", *access)
 
 	// Serializing the parsed access, so as to compare with the original key.
 	serializedAccess, err := access.Serialize()
 	if err != nil {
 		fmt.Println("Error Serialized key : ", err)
 	}
-	//
-	fmt.Println("Serialized access key\t:", serializedAccess)
 
-	fmt.Println("\nOpening Bucket...", configStorj.Bucket)
+	if DEBUG {
+		fmt.Println("Serialized access key\t:", serializedAccess)
+	}
+	fmt.Println("Opening Bucket: ", configStorj.Bucket)
 
 	// Open up the desired Bucket within the Project.
 	bucket, err := proj.OpenBucket(ctx, configStorj.Bucket, access)
@@ -125,19 +126,17 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	}
 	defer bucket.Close()
 
-	fmt.Println("\nGetting data into a buffer...")
+	//fmt.Println("Getting data into a buffer...")
 	buf := bytes.NewBuffer(dataToUpload)
 
-	fmt.Println("\nCreating file name in the bucket, as per current time...")
+	//fmt.Println("Creating file name in the bucket, as per current time...")
 	t := time.Now()
 	time := t.Format("2006-01-02_15:04:05")
 	var filename = databaseName + "_" + time + ".bson"
 	configStorj.UploadPath = configStorj.UploadPath + filename
 
 	fmt.Println("File path: ", configStorj.UploadPath)
-
-	fmt.Println("\nUploading of the object to the Storj bucket: Initiated...")
-	//
+	fmt.Println("Uploading of the object to the Storj bucket: Initiated...")
 
 	// Uploading BSON to Storj.
 	err = bucket.UploadObject(ctx, configStorj.UploadPath, buf, nil)
@@ -150,7 +149,7 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 		}
 	}
 
-	fmt.Println("\nUploading of the object to the Storj bucket: Completed!")
+	fmt.Println("Uploading of the object to the Storj bucket: Completed!")
 
 	if DEBUG {
 		// Test uploaded data by downloading it.

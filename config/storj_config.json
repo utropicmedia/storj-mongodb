@@ -1,7 +1,7 @@
 { 
-    "apikey":     "change-me-to-the-api-key-created-in-satellite-gui",
+    "apikey":     "13Yqf9SJhb9ApNZQdY2H4h47pacMyQeAtGafLUygWhTuugCU17P5BffEZveFnP8ivv2dsrWFaKPZJnRupHHgkw9abTw3hzxpHt2td5Y",
     "satellite":  "mars.tardigrade.io:7777",
-    "bucket":     "my-first-bucket",
-	"uploadPath": "foo/bar/baz",
+    "bucket":     "bucket02",
+	"uploadPath": "",
     "encryptionpassphrase": "test"
 }
