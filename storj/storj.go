@@ -66,6 +66,9 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	fmt.Println("\nCreating New Uplink...")
 
 	var cfg uplink.Config
+	// configure the partner id
+	cfg.Volatile.PartnerID = "a1ba07a4-e095-4a43-914c-1d56c9ff5afd"
+
 	ctx := context.Background()
 
 	uplinkstorj, err := uplink.NewUplink(ctx, &cfg)
