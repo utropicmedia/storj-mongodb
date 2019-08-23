@@ -4,10 +4,10 @@
 package storj
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"time"
@@ -42,7 +42,7 @@ func LoadStorjConfiguration(fullFileName string) (ConfigStorj, error) { // fullF
 	jsonParser.Decode(&configStorj)
 
 	// Display read information.
-	fmt.Println("Read Storj configuration from the ", fullFileName, " file")
+	fmt.Println("\nRead Storj configuration from the ", fullFileName, " file")
 	fmt.Println("\nAPI Key\t\t: ", configStorj.APIKey)
 	fmt.Println("Satellite	: ", configStorj.Satellite)
 	fmt.Println("Bucket		: ", configStorj.Bucket)
@@ -51,11 +51,13 @@ func LoadStorjConfiguration(fullFileName string) (ConfigStorj, error) { // fullF
 	return configStorj, nil
 }
 
-// ConnectStorjUploadData reads Storj configuration from given file,
-// connects to the desired Storj network, and
-// uploads given object to the desired bucket.
-func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseName string) error { // fullFileName for fetching storj V3 credentials from  given JSON filename
-	// dataToUpload contains data that will be uploaded to storj V3 network.
+// ConnectStorjReadUploadData reads Storj configuration from given file,
+// connects to the desired Storj network.
+// It then reads data using io.Reader interface and
+// uploads it as object to the desired bucket.
+func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, databaseName string) error { // fullFileName for fetching storj V3 credentials from  given JSON filename
+	// databaseReader is an io.Reader implementation that 'reads' desired data,
+	// which is to be uploaded to storj V3 network.
 	// databaseName for adding dataBase name in storj V3 filename.
 	// Read Storj bucket's configuration from an external file.
 	configStorj, err := LoadStorjConfiguration(fullFileName)
@@ -130,60 +132,62 @@ func ConnectStorjUploadData(fullFileName string, dataToUpload []byte, databaseNa
 	defer bucket.Close()
 
 	//fmt.Println("Getting data into a buffer...")
-	buf := bytes.NewBuffer(dataToUpload)
+	
+	var fileNamesDEBUG []string
+	
+	// Read data using io.Reader and upload it to Storj.
+	for err = io.ErrShortBuffer; (err == io.ErrShortBuffer); {
+		t := time.Now()
+		timeNow := t.Format("2006-01-02_15:04:05")
+		var filename = databaseName + "/" + timeNow + ".bson"
+		//
+		fmt.Println("File path: ", configStorj.UploadPath + filename)
+		fmt.Println("\nUploading of the object to the Storj bucket: Initiated...")
 
-	//fmt.Println("Creating file name in the bucket, as per current time...")
-	t := time.Now()
-	time := t.Format("2006-01-02_15:04:05")
-	var filename = databaseName + "_" + time + ".bson"
-	configStorj.UploadPath = configStorj.UploadPath + filename
-
-	fmt.Println("File path: ", configStorj.UploadPath)
-	fmt.Println("Uploading of the object to the Storj bucket: Initiated...")
-
-	// Uploading BSON to Storj.
-	err = bucket.UploadObject(ctx, configStorj.UploadPath, buf, nil)
-	if err != nil {
-		fmt.Println("Uploading of data failed :\n ", err)
-		fmt.Println("\nRetrying to Uploading data .....")
-		err = bucket.UploadObject(ctx, configStorj.UploadPath, buf, nil)
-		if err != nil {
-			return fmt.Errorf("Could not upload: %s", err)
+		err = bucket.UploadObject(ctx, configStorj.UploadPath + filename, databaseReader, nil)
+		//
+		if DEBUG {
+			fileNamesDEBUG = append(fileNamesDEBUG, filename)
+			//
+			fmt.Printf("\nbucket.UploadObject - Error: %s == %s => %t\n", err, io.ErrShortBuffer, err == io.ErrShortBuffer)
 		}
+	}
+	
+	if err != nil {
+		return fmt.Errorf("Could not upload: %s", err)
 	}
 
 	fmt.Println("Uploading of the object to the Storj bucket: Completed!")
 
 	if DEBUG {
-		// Test uploaded data by downloading it.
-		// serializedAccess, err := access.Serialize().
-		// Initiate a download of the same object again.
-		readBack, err := bucket.OpenObject(ctx, configStorj.UploadPath)
-		if err != nil {
-			return fmt.Errorf("could not open object at %q: %v", configStorj.UploadPath, err)
-		}
-		defer readBack.Close()
+		for _, filename := range fileNamesDEBUG {
+			// Test uploaded data by downloading it.
+			// serializedAccess, err := access.Serialize().
+			// Initiate a download of the same object again.
+			readBack, err := bucket.OpenObject(ctx, configStorj.UploadPath + filename)
+			if err != nil {
+				return fmt.Errorf("could not open object at %q: %v", configStorj.UploadPath + filename, err)
+			}
+			defer readBack.Close()
 
-		fmt.Println("Downloading range")
-		// We want the whole thing, so range from 0 to -1.
-		strm, err := readBack.DownloadRange(ctx, 0, -1)
-		if err != nil {
-			return fmt.Errorf("could not initiate download: %v", err)
-		}
-		defer strm.Close()
-		fmt.Println("Downloading Object from bucket : Initiated....")
-		// Read everything from the stream.
-		receivedContents, err := ioutil.ReadAll(strm)
-		if err != nil {
-			return fmt.Errorf("could not read object: %v", err)
-		}
-		var fileNameDownload = "downloadeddata_" + time + ".bson"
-		err = ioutil.WriteFile(fileNameDownload, receivedContents, 0644)
+			fmt.Println("\nDownloading range")
+			// We want the whole thing, so range from 0 to -1.
+			strm, err := readBack.DownloadRange(ctx, 0, -1)
+			if err != nil {
+				return fmt.Errorf("could not initiate download: %v", err)
+			}
+			defer strm.Close()
+			fmt.Printf("Downloading Object %s from bucket : Initiated...\n", filename)
+			// Read everything from the stream.
+			receivedContents, err := ioutil.ReadAll(strm)
+			if err != nil {
+				return fmt.Errorf("could not read object: %v", err)
+			}
+			var fileNameDownload = "downloadeddata/" + filename + ".bson"
+			err = ioutil.WriteFile(fileNameDownload, receivedContents, 0644)
 
-		if !bytes.Equal(dataToUpload, receivedContents) {
-			return fmt.Errorf("error: uploaded data != downloaded data")
+			fmt.Printf("Downloaded %d bytes of Object from bucket!\n", len(receivedContents))
 		}
-		fmt.Println("Downloading Object from bucket : Complete!")
 	}
 
 	return nil

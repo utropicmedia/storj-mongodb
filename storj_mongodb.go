@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -31,7 +32,7 @@ func setAppInfo() {
 	app.Name = "Storj MongoDB Connector"
 	app.Usage = "Backup your MongoDB collections to the decentralized Storj network"
 	app.Author = "Satyam Shivam - Utropicmedia"
-	app.Version = "1.0.7"
+	app.Version = "1.0.8"
 
 }
 
@@ -67,17 +68,24 @@ func setCommands() {
 					}
 				}
 
-				// Connect to Database and process data
-				data, dbname, err := mongo.ConnectToDBFetchData(fullFileName)
+				// Establish connection with MongoDB and get io.Reader implementor.
+				dbReader, err := mongo.ConnectToDB(fullFileName)
+				//
+				if err != nil {
+					log.Fatalf("Failed to establish connection with MongoDB: %s\n", err)
+				}
+
+				// Connect to the Database and process data
+				data, err := mongo.FetchData(dbReader)
 
 				if err != nil {
-					log.Fatalf("mongo.ConnectToDBFetchData: %s", err)
+					log.Fatalf("mongo.FetchData: %s", err)
 				} else {
 					fmt.Println("Reading ALL collections from the MongoDB database...Complete!")
 				}
 
 				if gbDEBUG {
-					fmt.Println("Size of fetched data from database :", dbname, unsafe.Sizeof(data))
+					fmt.Println("Size of fetched data from database :", dbReader.DatabaseName, unsafe.Sizeof(data))
 				}
 			},
 		},
@@ -122,7 +130,11 @@ func setCommands() {
 					}
 				}
 
-				err := storj.ConnectStorjUploadData(fullFileName, []byte(bsonData), dbName)
+				// Create a buffer as an io.Reader implementor.
+				buf := bytes.NewBuffer(bsonData)
+				//
+				err := storj.ConnectStorjReadUploadData(fullFileName, buf, dbName)
+				//
 				if err != nil {
 					fmt.Println("Error while uploading data to the Storj bucket")
 				}
@@ -157,20 +169,19 @@ func setCommands() {
 					}
 				}
 
-				// Fetching data from mongodb.
-				data, dbname, err := mongo.ConnectToDBFetchData(fullFileNameMongoDB)
-
+				// Establish connection with MongoDB and get io.Reader implementor.
+				dbReader, err := mongo.ConnectToDB(fullFileNameMongoDB)
+				//
 				if err != nil {
-					log.Fatalf("mongo.ConnectToDBFetchData: %s", err)
+					log.Fatalf("Failed to establish connection with MongoDB: %s\n", err)
 				}
 
-				if gbDEBUG {
-					fmt.Println("Size of fetched data from database: ", dbname, unsafe.Sizeof(data))
-				}
-				// Connecting to storj network for uploading data.
-				err = storj.ConnectStorjUploadData(fullFileNameStorj, []byte(data), dbname)
+				// Fetch all collections' documents from MongoDB instance
+				// and simultaneously store them into desired Storj bucket.
+				err = storj.ConnectStorjReadUploadData(fullFileNameStorj, dbReader, dbReader.DatabaseName)
+				//
 				if err != nil {
-					fmt.Println("Error while uploading data to bucket ", err)
+					log.Fatalf("Error while fetching MongoDB documents and uploading them to bucket: %s\n", err)
 				}
 			},
 		},
