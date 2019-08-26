@@ -29,10 +29,16 @@ $ chmod 555 configure.sh
 $ ./configure.sh
 ```
 
+**NOTE**: In Windows powershell, the corresponding command isL
+```
+> sh ./configure.sh
+```
+
 ## Build ONCE
 ```
 $ go build storj_mongodb.go
 ```
+
 
 
 ## Set-up Files
