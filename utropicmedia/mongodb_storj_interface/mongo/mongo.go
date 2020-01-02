@@ -21,7 +21,6 @@ import (
 // DEBUG allows more detailed working to be exposed through the terminal.
 var DEBUG = false
 
-
 // ConfigMongoDB defines the variables and types.
 type ConfigMongoDB struct {
 	Hostname   string `json:"hostname"`
@@ -33,31 +32,28 @@ type ConfigMongoDB struct {
 
 // MongoReader implements an io.Reader interface
 type MongoReader struct {
-	DatabaseName		string
-	database 			*goMongo.Database
-	collectionNames 	[]string
-	lastDocumentIndex	int
+	DatabaseName      string
+	database          *goMongo.Database
+	collectionNames   []string
+	lastDocumentIndex int
 }
 
-// Read reads and copies as many collections' documents raw BSON data into the 
-// buffer, as per the capacity of the buffer 
+// Read reads and copies as many collections' documents raw BSON data into the
+// buffer, as per the capacity of the buffer
 func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represents the byte array, where data is to be copied
 	// It returns number of bytes (int) that are copied
 	// and any error, if occurred.
 	// At the end of complete reading, io.EOF is sent as part of the error.
 	var err error
 	ctx := context.TODO()
-
 	bufferCapacity := cap(buf)
-
 	filterBSON := bson.M{}
 	//
 	if mongoReader.collectionNames == nil {
 		fmt.Println("Reading ALL collections from the MongoDB database...")
-		
+
 		// Retrieve ALL collections in the database.
 		mongoReader.collectionNames, err = mongoReader.database.ListCollectionNames(ctx, filterBSON)
-		//
 		if err != nil {
 			log.Printf("Failed to retrieve collection names: %s\n", err)
 			return 0, err
@@ -65,7 +61,7 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 	} else {
 		fmt.Printf("Reading from MongoDB collection %s...\n", mongoReader.collectionNames[0])
 	}
-	
+
 	var numOfBytesRead = 0
 
 	// Go through ALL collections.
@@ -85,36 +81,40 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 		}
 		//
 		defer cursor.Close(ctx)
-		
+
 		var documentCount = 0
-		
+		var lastIndex = 0
 		// Retrieve each document of the selected collection.
 		for cursor.Next(ctx) {
 			// Start reading from the last document that was under process.
 			if documentCount >= mongoReader.lastDocumentIndex {
 				// Convert JSON to BSON.
+				//
 				rawDocumentBSON, _ := bson.Marshal(cursor.Current)
-				//
+
 				documentSize := len(rawDocumentBSON)
-				//
+
 				// Ensure required space is available in buf.
 				if (numOfBytesRead + documentSize) < bufferCapacity {
-					copy(buf[numOfBytesRead:], rawDocumentBSON)
+
+					lastIndex = numOfBytesRead + len(rawDocumentBSON)
+					copy(buf[numOfBytesRead:lastIndex], rawDocumentBSON)
+
 					//
-					numOfBytesRead += documentSize	
+					numOfBytesRead += documentSize
 				} else {
 					if DEBUG {
 						log.Printf("Buffer full with %d bytes of '%s' collection's data from documents #%d to #%d!\nCaller must recall the Reader.\n", numOfBytesRead, mongoReader.collectionNames[ij], mongoReader.lastDocumentIndex, documentCount)
 					}
 					// Insufficient space in the buffer.
 					err = io.ErrShortBuffer
-	
+
 					// Next time, start with the unprocessed collections.
 					mongoReader.collectionNames = mongoReader.collectionNames[ij:]
 					//
 					// Also, operate from the current document instance.
 					mongoReader.lastDocumentIndex = documentCount
-	
+
 					// More data still needs to be sent,
 					// hence, caller must recall the Reader.
 					return numOfBytesRead, err
@@ -127,7 +127,7 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 		if DEBUG {
 			fmt.Printf("Retrieved %d bytes of '%s' collection's data from documents #%d to #%d", numOfBytesRead, mongoReader.collectionNames[ij], mongoReader.lastDocumentIndex, documentCount)
 		}
-		
+
 		if err := cursor.Err(); err != nil {
 			if DEBUG {
 				fmt.Printf(" before error: %s.\n", err)
@@ -146,7 +146,7 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 		if DEBUG {
 			fmt.Printf(".\n")
 		}
-		
+
 		log.Println("ALL documents of the collection are read!")
 
 		// All documents of the selected collection have been read.
@@ -217,8 +217,6 @@ func ConnectToDB(fullFileName string) (*MongoReader, error) { // fullFileName fo
 	err = client.Ping(context.TODO(), nil)
 	//
 	if err != nil {
-		fmt.Println("FAILed to connect to the MongoDB instance!")
-		log.Printf("client.Ping: %s\n", err)
 		return nil, err
 	}
 
@@ -233,15 +231,14 @@ func ConnectToDB(fullFileName string) (*MongoReader, error) { // fullFileName fo
 func FetchData(databaseReader io.Reader) ([]byte, error) { // databaseReader is an io.Reader implementation that 'reads' desired data.
 	// Create a buffer of feasible size
 	rawDocumentBSON := make([]byte, 0, 32768)
-	
 	// Retrieve ALL collections in the database.
 	var allCollectionsDataBSON = []byte{}
-	
+
 	var numOfBytesRead int
 	var err error
 
 	// Read data using the given io.Reader.
-	for err = io.ErrShortBuffer; (err == io.ErrShortBuffer); {
+	for err = io.ErrShortBuffer; err == io.ErrShortBuffer; {
 		numOfBytesRead, err = databaseReader.Read(rawDocumentBSON)
 		//
 		if numOfBytesRead > 0 {
@@ -250,7 +247,7 @@ func FetchData(databaseReader io.Reader) ([]byte, error) { // databaseReader is 
 			//
 			if DEBUG {
 				fmt.Printf("Read %d bytes of data - Error: %s == %s => %t\n", numOfBytesRead, err, io.ErrShortBuffer, err == io.ErrShortBuffer)
-			}	
+			}
 		}
 	}
 	//
