@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -80,7 +81,7 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 
 	var cfg uplink.Config
 	// Configure the partner id
-	cfg.Volatile.PartnerID = "a1ba07a4-e095-4a43-914c-1d56c9ff5afd"
+	cfg.Volatile.UserAgent = "FileZilla"
 
 	ctx := context.Background()
 
@@ -224,7 +225,7 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 	if err != nil {
 		fmt.Println("Could not open bucket", configStorj.Bucket, ":", err)
 		fmt.Println("Trying to create new bucket....")
-		_, err1 := proj.CreateBucket(ctx, configStorj.Bucket, nil)
+		info, err1 := proj.CreateBucket(ctx, configStorj.Bucket, nil)
 		if err1 != nil {
 			uplinkstorj.Close()
 			proj.Close()
@@ -242,8 +243,6 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 	}
 
 	defer bucket.Close()
-
-	//fmt.Println("Getting data into a buffer...")
 
 	var fileNamesDEBUG []string
 	checkSlash := configStorj.UploadPath[len(configStorj.UploadPath)-1:]
@@ -279,24 +278,12 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 			// Test uploaded data by downloading it.
 			// serializedAccess, err := access.Serialize().
 			// Initiate a download of the same object again.
-			readBack, err := bucket.OpenObject(ctx, configStorj.UploadPath+filename)
-			if err != nil {
-				return scope, fmt.Errorf("could not open object at %q: %v", configStorj.UploadPath+filename, err)
-			}
-			defer readBack.Close()
-
-			fmt.Println("\nDownloading range")
-			// We want the whole thing, so range from 0 to -1.
-			strm, err := readBack.DownloadRange(ctx, 0, -1)
-			if err != nil {
-				return scope, fmt.Errorf("could not initiate download: %v", err)
-			}
-			defer strm.Close()
+		
 			fmt.Printf("Downloading Object %s from bucket : Initiated...\n", filename)
 			// Read everything from the stream.
-			receivedContents, err := ioutil.ReadAll(strm)
+			receivedContents, err := downloadObject(ctx, bucket, configStorj.UploadPath + filename)
 			if err != nil {
-				return scope, fmt.Errorf("could not read object: %v", err)
+				return scope, fmt.Errorf("could not download object: %v", err)
 			}
 			var decodedBson bson.M
 			bson.Unmarshal(receivedContents, &decodedBson)
@@ -306,21 +293,10 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 				// panic: json: unsupported value: NaN
 			}
 			path := strings.Split(filename, "/")
-			filePath := strings.Split(path[1], ":")
-			if _, err := os.Stat("./debug"); os.IsNotExist(err) {
-				err1 := os.Mkdir("./debug", os.ModeDir)
-				if err1 != nil {
-					log.Fatal("Invalid Download Path")
-				}
-			}
 
-			if _, err := os.Stat("./debug/" + path[0]); os.IsNotExist(err) {
-				err1 := os.Mkdir("./debug/"+path[0], os.ModeDir)
-				if err1 != nil {
-					log.Fatal("Invalid Download Path")
-				}
-			}
-			var fileNameDownload = "./debug/" + path[0] + "/" + filePath[0] + "_" + filePath[1] + "_" + filePath[2]
+			pathtokens := strings.Split(path[1], ":")
+		_ = os.MkdirAll(filepath.Join("debug", path[0]), 0644)
+			var fileNameDownload = filepath.Join("debug", path[0], pathtokens[0], pathtokens[1], pathtokens[2])
 
 			err = ioutil.WriteFile(fileNameDownload, receivedContents, 0644)
 			if err != nil {
@@ -332,4 +308,20 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 	}
 
 	return scope, nil
+}
+
+func downloadObject(ctx context.Context, bucket *uplink.Bucket, path string) ([]byte, error) {
+	strm, err := bucket.Download(ctx, path)
+	if err != nil {
+		return nil, fmt.Errorf("could not open object at %q: %v", path, err)
+	}
+	defer strm.Close()
+
+	// Read everything from the stream.
+	receivedContents, err := ioutil.ReadAll(strm)
+	if err != nil {
+		return nil, fmt.Errorf("could not read object: %v", err)
+	}
+
+	return receivedContents, err
 }

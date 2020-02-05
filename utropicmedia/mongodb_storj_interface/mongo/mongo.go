@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
-	goMongo "go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -33,7 +33,7 @@ type ConfigMongoDB struct {
 // MongoReader implements an io.Reader interface
 type MongoReader struct {
 	DatabaseName      string
-	database          *goMongo.Database
+	database          *mongo.Database
 	collectionNames   []string
 	lastDocumentIndex int
 }
@@ -65,7 +65,7 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 	var numOfBytesRead = 0
 
 	// Go through ALL collections.
-	for ij, _ := range mongoReader.collectionNames {
+	for ij := range mongoReader.collectionNames {
 		if DEBUG {
 			fmt.Println("Collection: ", mongoReader.collectionNames[ij])
 			fmt.Println("-----------------")
@@ -113,7 +113,7 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 					mongoReader.collectionNames = mongoReader.collectionNames[ij:]
 					//
 					// Also, operate from the current document instance.
-					mongoReader.lastDocumentIndex = documentCount
+					mongoReader.lastDocumentIndex = documentCount + 1
 
 					// More data still needs to be sent,
 					// hence, caller must recall the Reader.
@@ -137,7 +137,7 @@ func (mongoReader *MongoReader) Read(buf []byte) (int, error) { // buf represent
 			mongoReader.collectionNames = mongoReader.collectionNames[ij:]
 			//
 			// Also, operate from the current document instance.
-			mongoReader.lastDocumentIndex = documentCount
+			mongoReader.lastDocumentIndex = documentCount + 1
 
 			// The caller needs to recall the Reader to fetch left-over data.
 			return numOfBytesRead, err
@@ -206,7 +206,7 @@ func ConnectToDB(fullFileName string) (*MongoReader, error) { // fullFileName fo
 	//
 	clientOptions := options.Client().ApplyURI(mongoURL)
 	//
-	client, err := goMongo.Connect(context.TODO(), clientOptions)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	//
 	if err != nil {
 		log.Printf("mongo.Connect: %s\n", err)
@@ -230,7 +230,7 @@ func ConnectToDB(fullFileName string) (*MongoReader, error) { // fullFileName fo
 // returns them in appended format.
 func FetchData(databaseReader io.Reader) ([]byte, error) { // databaseReader is an io.Reader implementation that 'reads' desired data.
 	// Create a buffer of feasible size
-	rawDocumentBSON := make([]byte, 0, 32768)
+	rawDocumentBSON := make([]byte, 0, 35768)
 	// Retrieve ALL collections in the database.
 	var allCollectionsDataBSON = []byte{}
 
