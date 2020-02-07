@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Storj Labs, Inc.
 // See LICENSE for copying information.
 
-package main
+package storjmongodb
 
 import (
 	"bytes"
@@ -9,10 +9,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"os"
 	"time"
 	"unsafe"
-
+	"os"
 	"github.com/utropicmedia/mongodb_storj_interface/mongo"
 	"github.com/utropicmedia/mongodb_storj_interface/storj"
 
@@ -32,7 +31,7 @@ func setAppInfo() {
 	app.Name = "Storj MongoDB Connector"
 	app.Usage = "Backup your MongoDB collections to the decentralized Storj network"
 	app.Authors = []*cli.Author{{Name: "Satyam Shivam - Utropicmedia", Email: "development@utropicmedia.com"}}
-	app.Version = "1.0.11"
+	app.Version = "1.0.12"
 
 }
 
@@ -51,7 +50,7 @@ func setCommands() {
 			Name:    "parse",
 			Aliases: []string{"p"},
 			Usage:   "Command to read and parse JSON information about MongoDB instance properties and then fetch ALL its collections. ",
-			//\narguments-\n\t  fileName [optional] = provide full file name (with complete path), storing mongoDB properties if this fileName is not given, then data is read from ./config/db_connector.json\n\t  example = ./storj_mongodb d ./config/db_property.json\n",
+			//\ncdarguments-\n\t  fileName [optional] = provide full file name (with complete path), storing mongoDB properties if this fileName is not given, then data is read from ./config/db_connector.json\n\t  example = ./storj_mongodb d ./config/db_property.json\n",
 			Action: func(cliContext *cli.Context) error {
 				var fullFileName = dbConfigFile
 
@@ -229,8 +228,8 @@ func setCommands() {
 		},
 	}
 }
-
-func main() {
+// StorjMongoDB created the CLI tool
+func StorjMongoDB() {
 
 	setAppInfo()
 	setCommands()

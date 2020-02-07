@@ -1,5 +1,10 @@
 # Storj-MongoDB Changelog
 
+## [1.0.12] - 07-02-2020
+### Changelog:
+* UserAgent name changed to MongoDB.
+* Made storj-mongodb a package named storjmongodb.
+
 ## [1.0.11] - 05-02-2020
 ### Changelog:
 * Changes made accodring to latest uplink v0.31.13.

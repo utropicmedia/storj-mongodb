@@ -71,7 +71,7 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 	// which is to be uploaded to storj V3 network.
 	// databaseName for adding dataBase name in storj V3 filename.
 	// Read Storj bucket's configuration from an external file.
-	var scope string = ""
+	var scope string
 	configStorj, err := LoadStorjConfiguration(fullFileName)
 	if err != nil {
 		log.Fatal("loadStorjConfiguration:", err)
@@ -81,7 +81,7 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 
 	var cfg uplink.Config
 	// Configure the partner id
-	cfg.Volatile.UserAgent = "FileZilla"
+	cfg.Volatile.UserAgent = "MongoDB"
 
 	ctx := context.Background()
 
@@ -181,7 +181,6 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 				log.Fatal(err)
 			}
 			scope = serializedRestrictScope
-			//fmt.Println("Restricted serialized user scope", serializedRestrictScope)
 		}
 		userScope := &uplink.Scope{
 			SatelliteAddr:    configStorj.Satellite,
@@ -225,7 +224,7 @@ func ConnectStorjReadUploadData(fullFileName string, databaseReader io.Reader, d
 	if err != nil {
 		fmt.Println("Could not open bucket", configStorj.Bucket, ":", err)
 		fmt.Println("Trying to create new bucket....")
-		info, err1 := proj.CreateBucket(ctx, configStorj.Bucket, nil)
+		_, err1 := proj.CreateBucket(ctx, configStorj.Bucket, nil)
 		if err1 != nil {
 			uplinkstorj.Close()
 			proj.Close()
