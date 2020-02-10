@@ -3,7 +3,7 @@
 To build from scratch, [install Go](https://golang.org/doc/install#install).
 
 ```
-go get github.com/utropicmedia/storjmongodb
+go get github.com/utropicmedia/mongodb_storj_interface/storjmongodb
 ```
 
 ## Set-up Files
@@ -53,10 +53,10 @@ go get github.com/utropicmedia/storjmongodb
 
 ## Run the command-line tool
 
-* Import the package "github.com/utropicmedia/storj-mongodb" in your main file and call the funtion 'strojmongodb.StorjMongoDB()' in the main function.
+* Import the package "github.com/utropicmedia/mongodb_storj_interface/storjmongodb" in your main file and call the funtion 'strojmongodb.StorjMongoDB()' in the main function.
 
-**NOTE**: The following commands operate in a Linux system
-
+**NOTE**: The following commands operate in a Linux system/
+**NOTE**: storj-mongodb is the name of the main file which imports the above package.
 * Get help
 ```
 $ storj-monogodb -h
