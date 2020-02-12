@@ -1,5 +1,10 @@
 # Storj-MongoDB Changelog
 
+## [1.0.13] - 12-02-2020
+### Changelog:
+* Fixed the module related issues by changing the path of the storjmongodb module.
+* Paths of mongo and storj packages have also been altered by removing the mongodb_storj_inteface folder.
+
 ## [1.0.12] - 07-02-2020
 ### Changelog:
 * UserAgent name changed to MongoDB.
@@ -17,7 +22,7 @@
 
 ## [1.0.10] - 17-12-2019
 ### Changelog:
-* Changess made according to latest libuplink v0.27.1
+* Changes made according to latest libuplink v0.27.1
 * Changes made according to updated cli package.
 * Added Macroon functionality.
 * Added option to access storj using Serialized Scope Key. 

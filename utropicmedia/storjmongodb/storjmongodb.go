@@ -12,8 +12,8 @@ import (
 	"time"
 	"unsafe"
 	"os"
-	"github.com/utropicmedia/mongodb_storj_interface/mongo"
-	"github.com/utropicmedia/mongodb_storj_interface/storj"
+	"github.com/utropicmedia/mongo"
+	"github.com/utropicmedia/storj"
 
 	"github.com/urfave/cli"
 )
@@ -31,7 +31,7 @@ func setAppInfo() {
 	app.Name = "Storj MongoDB Connector"
 	app.Usage = "Backup your MongoDB collections to the decentralized Storj network"
 	app.Authors = []*cli.Author{{Name: "Satyam Shivam - Utropicmedia", Email: "development@utropicmedia.com"}}
-	app.Version = "1.0.12"
+	app.Version = "1.0.13"
 
 }
 
