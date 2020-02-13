@@ -1,7 +1,7 @@
 // Copyright (C) 2019 Storj Labs, Inc.
 // See LICENSE for copying information.
 
-package storjmongodb
+package main
 
 import (
 	"bytes"
@@ -9,11 +9,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"time"
 	"unsafe"
-	"os"
-	"github.com/utropicmedia/mongo"
-	"github.com/utropicmedia/storj"
+	
+	"github.com/utropicmedia/storj-mongodb/mongo"
+	"github.com/utropicmedia/storj-mongodb/storj"
 
 	"github.com/urfave/cli"
 )
@@ -31,7 +32,7 @@ func setAppInfo() {
 	app.Name = "Storj MongoDB Connector"
 	app.Usage = "Backup your MongoDB collections to the decentralized Storj network"
 	app.Authors = []*cli.Author{{Name: "Satyam Shivam - Utropicmedia", Email: "development@utropicmedia.com"}}
-	app.Version = "1.0.13"
+	app.Version = "1.0.14"
 
 }
 
@@ -44,7 +45,6 @@ func setDebug(debugVal bool) {
 
 // setCommands sets various command-line options for the app.
 func setCommands() {
-
 	app.Commands = []*cli.Command{
 		{
 			Name:    "parse",
@@ -229,7 +229,7 @@ func setCommands() {
 	}
 }
 // StorjMongoDB created the CLI tool
-func StorjMongoDB() {
+func main() {
 
 	setAppInfo()
 	setCommands()

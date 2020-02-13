@@ -1,5 +1,10 @@
 # Storj-MongoDB Changelog
 
+## [1.0.14] - 13-02-2020
+### Changelog:
+* Changed paths of the go files and corresponding packages.
+
+
 ## [1.0.13] - 12-02-2020
 ### Changelog:
 * Fixed the module related issues by changing the path of the storjmongodb module.
