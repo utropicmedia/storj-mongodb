@@ -31,8 +31,8 @@ var app = cli.NewApp()
 func setAppInfo() {
 	app.Name = "Storj MongoDB Connector"
 	app.Usage = "Backup your MongoDB collections to the decentralized Storj network"
-	app.Authors = []*cli.Author{{Name: "Satyam Shivam - Utropicmedia", Email: "development@utropicmedia.com"}}
-	app.Version = "1.0.14"
+	app.Authors = []cli.Author{{Name: "Satyam Shivam - Utropicmedia", Email: "development@utropicmedia.com"}}
+	app.Version = "1.0.15"
 
 }
 
@@ -45,7 +45,7 @@ func setDebug(debugVal bool) {
 
 // setCommands sets various command-line options for the app.
 func setCommands() {
-	app.Commands = []*cli.Command{
+	app.Commands = []cli.Command{
 		{
 			Name:    "parse",
 			Aliases: []string{"p"},
@@ -55,14 +55,14 @@ func setCommands() {
 				var fullFileName = dbConfigFile
 
 				// process arguments
-				if len(cliContext.Args().Slice()) > 0 {
-					for i := 0; i < len(cliContext.Args().Slice()); i++ {
+				if len(cliContext.Args()) > 0 {
+					for i := 0; i < len(cliContext.Args()); i++ {
 
 						// Incase, debug is provided as argument.
-						if cliContext.Args().Slice()[i] == "debug" {
+						if cliContext.Args()[i] == "debug" {
 							setDebug(true)
 						} else {
-							fullFileName = cliContext.Args().Slice()[i]
+							fullFileName = cliContext.Args()[i]
 						}
 					}
 				}
@@ -105,22 +105,22 @@ func setCommands() {
 				var restrict string
 
 				// process arguments
-				if len(cliContext.Args().Slice()) > 0 {
-					for i := 0; i < len(cliContext.Args().Slice()); i++ {
+				if len(cliContext.Args()) > 0 {
+					for i := 0; i < len(cliContext.Args()); i++ {
 
 						// Incase, debug is provided as argument.
-						if cliContext.Args().Slice()[i] == "debug" {
+						if cliContext.Args()[i] == "debug" {
 							setDebug(true)
 						} else {
 							if !foundFirstFileName {
-								fullFileName = cliContext.Args().Slice()[i]
+								fullFileName = cliContext.Args()[i]
 								foundFirstFileName = true
 							} else {
 								if !foundSecondFileName {
-									keyValue = cliContext.Args().Slice()[i]
+									keyValue = cliContext.Args()[i]
 									foundSecondFileName = true
 								} else {
-									restrict = cliContext.Args().Slice()[i]
+									restrict = cliContext.Args()[i]
 								}
 							}
 						}
@@ -173,25 +173,25 @@ func setCommands() {
 				var foundFirstFileName = false
 				var foundSecondFileName = false
 				var foundThirdFileName = false
-				if len(cliContext.Args().Slice()) > 0 {
-					for i := 0; i < len(cliContext.Args().Slice()); i++ {
+				if len(cliContext.Args()) > 0 {
+					for i := 0; i < len(cliContext.Args()); i++ {
 						// Incase debug is provided as argument.
-						if cliContext.Args().Slice()[i] == "debug" {
+						if cliContext.Args()[i] == "debug" {
 							setDebug(true)
 						} else {
 							if !foundFirstFileName {
-								fullFileNameMongoDB = cliContext.Args().Slice()[i]
+								fullFileNameMongoDB = cliContext.Args()[i]
 								foundFirstFileName = true
 							} else {
 								if !foundSecondFileName {
-									fullFileNameStorj = cliContext.Args().Slice()[i]
+									fullFileNameStorj = cliContext.Args()[i]
 									foundSecondFileName = true
 								} else {
 									if !foundThirdFileName {
-										keyValue = cliContext.Args().Slice()[i]
+										keyValue = cliContext.Args()[i]
 										foundThirdFileName = true
 									} else {
-										restrict = cliContext.Args().Slice()[i]
+										restrict = cliContext.Args()[i]
 									}
 								}
 							}

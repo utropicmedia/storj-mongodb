@@ -1,5 +1,9 @@
 # Storj-MongoDB Changelog
 
+## [1.0.15] - 12-04-2020
+### Changelog:
+* Resolved the syntax errors occured during build command.
+
 ## [1.0.14] - 13-02-2020
 ### Changelog:
 * Changed paths of the go files and corresponding packages.
