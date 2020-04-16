@@ -59,49 +59,49 @@ go get github.com/utropicmedia/storj-mongodb
 
 * Get help
 ```
-$ storj-monogodb -h
+$ storj-mongodb -h
 ```
 
 * Check version
 ```
-$ storj-monogodb -v
+$ storj-mongodb -v
 ```
 
 * Read BSON data from desired MongoDB instance and upload it to given Storj network bucket using Serialized Scope Key.  [note: filename arguments are optional.  default locations are used.]
 ```
-$ storj-monogodb store ./config/db_property.json ./config/storj_config.json  
+$ storj-mongodb store ./config/db_property.json ./config/storj_config.json  
 ```
 
 * Read BSON data from desired MongoDB instance and upload it to given Storj network bucket API key and EncryptionPassPhrase from storj_config.json and creates an unrestricted shareable Serialized Scope Key.  [note: filename arguments are optional. default locations are used.]
 ```
-$ storj-monogodb store ./config/db_property.json ./config/storj_config.json key
+$ storj-mongodb store ./config/db_property.json ./config/storj_config.json key
 ```
 
 * Read BSON data from desired MongoDB instance and upload it to given Storj network bucket API key and EncryptionPassPhrase from storj_config.json and creates a restricted shareable Serialized Scope Key.  [note: filename arguments are optional. default locations are used. `restrict` can only be used with `key`]
 ```
-$ storj-monogodb store ./config/db_property.json ./config/storj_config.json key restrict
+$ storj-mongodb store ./config/db_property.json ./config/storj_config.json key restrict
 ```
 
 * Read BSON data in `debug` mode from desired MongoDB instance and upload it to given Storj network bucket.  [note: filename arguments are optional.  default locations are used. Make sure `debug` folder already exist in project folder.]
 ```
-$ storj-monogodb store debug ./config/db_property.json ./config/storj_config.json  
+$ storj-mongodb store debug ./config/db_property.json ./config/storj_config.json  
 ```
 
 * Read MongoDB instance property from a desired JSON file and display all its collections' data
 ```
-$ storj-monogodb parse   
+$ storj-mongodb parse   
 ```
 
 * Read MongoDB instance property in `debug` mode from a desired JSON file and display all its collections' data
 ```
-$ storj-monogodb parse debug 
+$ storj-mongodb parse debug 
 ```
 
 * Read and parse Storj network's configuration, in JSON format, from a desired file and upload a sample object
 ```
-$ storj-monogodb test 
+$ storj-mongodb test 
 ```
 * Read and parse Storj network's configuration, in JSON format, from a desired file and upload a sample object in `debug` mode
 ```
-$ storj-monogodb test debug 
+$ storj-mongodb test debug 
 ```
